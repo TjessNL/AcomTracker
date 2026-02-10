@@ -1,6 +1,6 @@
 public class Lease{
     
-    public int Amount{get;set}
-    required public Tenant Id {get;set}
+    public int Amount{get;set;}
+    public required int LeaseId {get;set;}
 
 }

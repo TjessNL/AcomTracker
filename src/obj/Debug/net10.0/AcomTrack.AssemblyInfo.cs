@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AcomTrack")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9892727ab6d047971488311c7c6681ffb217f01f")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5938df6e46bdd8c4d0e8c7d03043881943819c2")]
 [assembly: System.Reflection.AssemblyProductAttribute("AcomTrack")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AcomTrack")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -2,9 +2,9 @@ public class Payment
 {
 
     public DateTime Date { get; set; }
-    required public Tenant Name {get; set;}
-    required public string Method { get; set; }
-    public float Amount {get; set;}
-
+    public required Tenant Name {get; set;}
+    public required string Method { get; set; }
+    public decimal Amount {get; set;}
+    public int PaymentId {get; set;}
     
 }
