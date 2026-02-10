@@ -23,7 +23,7 @@ The goal is to move the core workflow into a database-backed web service so data
 
 ---
 
-## Future work (after MVP 1)
+## Future work
 - **PostgreSQL migrations workflow:** documented process for schema changes (migrations, rollbacks, environments).
 - **Expenses module:** record operational expenses (separate entity), categories, and monthly summaries.
 - **Excel import pipeline:** staging → cleaning → validation → import (e.g., Power Query/OpenRefine + CSV staging).
