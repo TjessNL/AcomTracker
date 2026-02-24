@@ -17,9 +17,8 @@ The goal is to move the core workflow into a database backed web service so data
 
 ## Tech stack (current plan)
 - Backend: .NET (ASP.NET Core Web API)
-- Database: PostgreSQL (local dev via Docker)
-- Frontend: React (after backend flows work)
-- Cheap deployment (later): managed hosting for API + hosted Postgres
+- Database: PostgreSQL 
+- Frontend: Blazor
 
 ---
 
