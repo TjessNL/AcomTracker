@@ -1,9 +1,11 @@
-using System.Security.Cryptography.X509Certificates;
-
 public class Tenant
-
 {
-    public float Balance {get; set;}
-     public required string Name {get; set;}
-    required public int TenantId {get;set;}
+    public int TenantId { get; set; }
+    public required string Name { get; set; }
+    public decimal MonthlyRent { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateOnly LeaseStartDate { get; set; }
+
+    public ICollection<Lease> Leases { get; set; } = [];
+    public ICollection<Payment> Payments { get; set; } = [];
 }
