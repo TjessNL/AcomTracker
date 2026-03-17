@@ -1,3 +1,5 @@
+namespace AcomTracker.Domain.Entities;
+
 public class Lease
 {
     public int LeaseId { get; set; }

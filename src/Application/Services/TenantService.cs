@@ -1,3 +1,5 @@
+namespace AcomTracker.Application.Services;
+
 public class TenantService(ITenantRepository repo) : ITenantService
 {
     private static int MonthsElapsed(DateOnly start)

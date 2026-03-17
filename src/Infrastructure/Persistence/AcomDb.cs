@@ -1,4 +1,4 @@
-namespace src;
+namespace AcomTracker.Infrastructure.Persistence;
 
 using System.Dynamic;
 using Microsoft.EntityFrameworkCore;

@@ -1,3 +1,5 @@
+namespace AcomTracker.Domain.Interfaces;
+
 public interface IPaymentRepository
 {
     Task<IEnumerable<Payment>> GetByTenantIdAsync(int tenantId);

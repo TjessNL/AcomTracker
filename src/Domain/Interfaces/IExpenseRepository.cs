@@ -1,4 +1,4 @@
-namespace AcomTracker.Infrastructure.Repositories;
+namespace AcomTracker.Domain.Interfaces;
 
 using AcomTracker.Domain.Entities;
 using AcomTracker.Domain.Interfaces;

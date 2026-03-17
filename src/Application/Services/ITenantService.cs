@@ -1,3 +1,4 @@
+namespace AcomTracker.Application.Services;
 public interface ITenantService
 {
     Task<IEnumerable<TenantSummaryDto>> GetDashboardAsync(string? search);
