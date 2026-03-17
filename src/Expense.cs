@@ -1,6 +1,9 @@
 public class Expense{
-    public decimal Cost{get; set;}
-    required public string Description {get; set;}
-    required public string ExpenseId{get; set;}
+    public int ExpenseId { get; set; }
+    public required string Description { get; set; }
+    public decimal Amount { get; set; }
+    public DateOnly Date { get; set; }
+    public string? Category { get; set; }
+
   
 }
