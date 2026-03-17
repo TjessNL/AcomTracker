@@ -1,5 +1,6 @@
 using src;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AcomDb>(opt =>
@@ -76,9 +77,9 @@ app.MapPost("/Tenants", async (CreateTenantDto dto, AcomDb db) =>
     if (!Validator.TryValidateObject(dto, context, results, validateAllProperties: true))
     {
         var errors = results.ToDictionary(
-            r => r.MemberNames.FirstOrDefault() ?? "error",
-            r => r.ErrorMessage ?? "Invalid value"
-        );
+        r => r.MemberNames.FirstOrDefault() ?? "error",
+        r => new[] { r.ErrorMessage ?? "Invalid value" }
+    );
         return Results.ValidationProblem(errors);
     }
 
