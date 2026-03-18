@@ -15,7 +15,7 @@ We currently store rent payments and expenses in a spreadsheet. This approach ca
 The goal is to move the core workflow into a database backed web service so data becomes structured, reliable, and scalable.
 
 
-## Tech stack (current plan)
+## Tech stack
 - Backend: .NET (ASP.NET Core Web API)
 - Database: PostgreSQL 
 - Frontend: Blazor
