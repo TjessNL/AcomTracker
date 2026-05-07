@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(pip install openpyxl --quiet 2>&1)",
+      "Bash(dotnet ef *)",
+      "Bash(dotnet build *)"
+    ]
+  }
+}

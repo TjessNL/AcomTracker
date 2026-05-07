@@ -19,6 +19,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IExpenseRepository, ExpenseRepository>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IPaymentService, PaymentService>();
+        services.AddScoped<IExpenseService, ExpenseService>();
+        services.AddScoped<IExcelImportService, ExcelImportService>();
 
         return services;
     }

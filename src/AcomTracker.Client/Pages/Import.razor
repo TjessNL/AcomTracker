@@ -1,0 +1,285 @@
+@page "/import"
+@inject AcomApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Import Excel — AcomTracker</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Import from Excel</h1>
+        <p class="page-subtitle">Upload a rent ledger spreadsheet to bulk-import tenants and payments</p>
+    </div>
+</div>
+
+@if (step == Step.Upload)
+{
+    <div class="card" style="max-width:560px">
+        <div class="card-body">
+            @if (uploadError is not null)
+            {
+                <div class="alert alert-danger">@uploadError</div>
+            }
+
+            <div class="file-drop @(fileName is not null ? "has-file" : "")" style="margin-bottom:20px">
+                <InputFile OnChange="OnFileSelected" accept=".xlsx,.xls" style="display:none" id="excel-input" />
+                <label for="excel-input" class="file-drop-label">
+                    @if (fileName is not null)
+                    {
+                        <div style="text-align:center">
+                            <div style="font-size:32px;margin-bottom:8px">📊</div>
+                            <div style="font-weight:600;color:var(--primary)">@fileName</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:4px">Click to choose a different file</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="text-align:center;color:var(--text-muted)">
+                            <div style="font-size:40px;margin-bottom:8px">📂</div>
+                            <div style="font-size:14px;font-weight:600">Click to upload .xlsx file</div>
+                            <div style="font-size:12px;margin-top:4px">Supports the standard rent ledger format</div>
+                        </div>
+                    }
+                </label>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Default Lease Start Date</label>
+                <input class="form-control" type="date"
+                       value="@defaultLeaseStart.ToString("yyyy-MM-dd")"
+                       @onchange="e => defaultLeaseStart = DateOnly.Parse(e.Value!.ToString()!)" />
+                <div class="form-hint">Used when the spreadsheet does not include lease start dates</div>
+            </div>
+
+            <button class="btn btn-primary" @onclick="UploadAndPreview" disabled="@(fileBytes is null || uploading)">
+                @(uploading ? "Analysing…" : "Analyse File")
+            </button>
+        </div>
+    </div>
+}
+
+@if (step == Step.Preview && preview is not null)
+{
+    <div style="margin-bottom:20px">
+        <!-- Issues banner -->
+        @if (preview.Issues.Count > 0)
+        {
+            <div class="alert alert-warning" style="margin-bottom:16px">
+                <strong>⚠ @preview.Issues.Count data issue@(preview.Issues.Count == 1 ? "" : "s") detected</strong> —
+                review the highlighted rows below before confirming the import.
+            </div>
+        }
+        else
+        {
+            <div class="alert" style="background:#f0fdf4;border:1px solid #bbf7d0;color:#166534;margin-bottom:16px">
+                ✓ Data looks clean — no issues detected.
+            </div>
+        }
+
+        <!-- Tenant preview table -->
+        <div class="card" style="margin-bottom:20px">
+            <div class="card-header">
+                <span class="card-title">Tenants to Import</span>
+                <span class="badge badge-neutral">@preview.Tenants.Count rows</span>
+            </div>
+            <div class="card-body" style="padding:0">
+                <div class="table-wrap" style="margin:0;border-radius:0">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Monthly Rent</th>
+                                <th>Payments</th>
+                                <th>Outstanding (raw)</th>
+                                <th>Issues</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in preview.Tenants)
+                            {
+                                var hasIssues = t.Issues.Count > 0;
+                                <tr style="@(hasIssues ? "background:#fffbeb" : "")">
+                                    <td style="color:var(--text-muted)">@t.RowNumber</td>
+                                    <td style="font-weight:600">
+                                        <input class="form-control form-control-inline"
+                                               value="@t.Name"
+                                               @onchange="e => t.Name = e.Value?.ToString() ?? t.Name" />
+                                    </td>
+                                    <td>
+                                        <input class="form-control form-control-inline"
+                                               type="number" style="width:120px"
+                                               value="@t.MonthlyRent"
+                                               @onchange="e => { if (decimal.TryParse(e.Value?.ToString(), out var v)) t.MonthlyRent = v; }" />
+                                    </td>
+                                    <td>
+                                        @if (t.Payments.Count > 0)
+                                        {
+                                            <span class="badge badge-success">@t.Payments.Count payments</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge badge-neutral">none</span>
+                                        }
+                                    </td>
+                                    <td style="color:var(--text-muted);font-size:12px">@(t.RawOutstandingBalance ?? "—")</td>
+                                    <td>
+                                        @if (hasIssues)
+                                        {
+                                            @foreach (var issue in t.Issues)
+                                            {
+                                                <div class="issue-chip">⚠ @issue</div>
+                                            }
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Expense preview -->
+        @if (preview.Expenses.Count > 0)
+        {
+            <div class="card" style="margin-bottom:20px">
+                <div class="card-header">
+                    <span class="card-title">Expenses to Import</span>
+                    <span class="badge badge-neutral">@preview.Expenses.Count items</span>
+                </div>
+                <div class="card-body" style="padding:0">
+                    <div class="table-wrap" style="margin:0;border-radius:0">
+                        <table>
+                            <thead>
+                                <tr><th>Description</th><th>Amount</th><th>Issues</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var e in preview.Expenses)
+                                {
+                                    <tr>
+                                        <td>@e.Description</td>
+                                        <td style="font-weight:600">€@e.Amount.ToString("N0")</td>
+                                        <td>
+                                            @foreach (var issue in e.Issues)
+                                            {
+                                                <div class="issue-chip">⚠ @issue</div>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Action buttons -->
+        <div style="display:flex;gap:12px;align-items:center">
+            <button class="btn btn-secondary" @onclick="Reset">← Upload Different File</button>
+            <button class="btn btn-primary" @onclick="ConfirmImport" disabled="@confirming">
+                @(confirming ? "Importing…" : $"Confirm Import ({preview.Tenants.Count} tenants)")
+            </button>
+        </div>
+    </div>
+}
+
+@if (step == Step.Done && result is not null)
+{
+    <div class="card" style="max-width:480px">
+        <div class="card-body" style="text-align:center;padding:40px">
+            <div style="font-size:52px;margin-bottom:12px">✅</div>
+            <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Import Complete</h2>
+            <div style="display:flex;gap:24px;justify-content:center;margin:24px 0">
+                <div class="stat-card" style="min-width:120px">
+                    <div class="stat-label">Tenants</div>
+                    <div class="stat-value">@result.TenantsImported</div>
+                </div>
+                <div class="stat-card" style="min-width:120px">
+                    <div class="stat-label">Payments</div>
+                    <div class="stat-value">@result.PaymentsImported</div>
+                </div>
+                <div class="stat-card" style="min-width:120px">
+                    <div class="stat-label">Expenses</div>
+                    <div class="stat-value">@result.ExpensesImported</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;justify-content:center">
+                <a href="/" class="btn btn-primary">Go to Dashboard</a>
+                <button class="btn btn-secondary" @onclick="Reset">Import Another File</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    enum Step { Upload, Preview, Done }
+
+    Step             step           = Step.Upload;
+    ExcelPreviewDto? preview;
+    ImportResultDto? result;
+
+    byte[]? fileBytes;
+    string? fileName;
+    DateOnly defaultLeaseStart = DateOnly.FromDateTime(DateTime.Today.AddMonths(-1));
+
+    bool    uploading  = false;
+    bool    confirming = false;
+    string? uploadError;
+
+    async Task OnFileSelected(InputFileChangeEventArgs e)
+    {
+        var file = e.File;
+        if (file is null) return;
+        using var ms = new MemoryStream();
+        await file.OpenReadStream(10 * 1024 * 1024).CopyToAsync(ms);
+        fileBytes = ms.ToArray();
+        fileName  = file.Name;
+        uploadError = null;
+    }
+
+    async Task UploadAndPreview()
+    {
+        if (fileBytes is null) return;
+        uploading   = true;
+        uploadError = null;
+        try
+        {
+            preview = await Api.PreviewImportAsync(fileBytes, fileName ?? "ledger.xlsx");
+            step    = Step.Preview;
+        }
+        catch (Exception ex)
+        {
+            uploadError = $"Could not analyse file: {ex.Message}";
+        }
+        finally { uploading = false; }
+    }
+
+    async Task ConfirmImport()
+    {
+        if (preview is null) return;
+        confirming = true;
+        try
+        {
+            var dto = new ConfirmImportDto(preview.Tenants, preview.Expenses, defaultLeaseStart);
+            result  = await Api.ConfirmImportAsync(dto);
+            step    = Step.Done;
+        }
+        catch (Exception ex)
+        {
+            uploadError = $"Import failed: {ex.Message}";
+            step = Step.Preview;
+        }
+        finally { confirming = false; }
+    }
+
+    void Reset()
+    {
+        step        = Step.Upload;
+        preview     = null;
+        result      = null;
+        fileBytes   = null;
+        fileName    = null;
+        uploadError = null;
+    }
+}
