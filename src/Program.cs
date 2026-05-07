@@ -41,5 +41,7 @@ if (app.Environment.IsDevelopment())
 app.MapDashboardEndpoints();
 app.MapTenantEndpoints();
 app.MapPaymentEndpoints();
+app.MapExpenseEndpoints();
+app.MapImportEndpoints();
 
 app.Run();
