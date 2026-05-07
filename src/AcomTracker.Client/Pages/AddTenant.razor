@@ -1,0 +1,99 @@
+@page "/tenants/add"
+@inject AcomApiService Api
+@inject NavigationManager Nav
+
+<PageTitle>Add Tenant — AcomTracker</PageTitle>
+
+<div class="breadcrumb">
+    <a href="/tenants">Tenants</a>
+    <span>/</span>
+    <span>Add Tenant</span>
+</div>
+
+<div class="page-header">
+    <h1 class="page-title">Add New Tenant</h1>
+</div>
+
+<div class="card" style="max-width:560px">
+    <div class="card-body">
+        @if (error is not null)
+        {
+            <div class="alert alert-danger">@error</div>
+        }
+
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+
+            <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <InputText class="form-control"
+                           @bind-Value="model.Name"
+                           placeholder="e.g. Jan de Vries" />
+                <ValidationMessage For="() => model.Name" class="form-error" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Monthly Rent (€)</label>
+                <InputNumber class="form-control"
+                             @bind-Value="model.MonthlyRent"
+                             placeholder="850" />
+                <ValidationMessage For="() => model.MonthlyRent" class="form-error" />
+                <div class="form-hint">Amount charged every month for this lease</div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Lease Start Date</label>
+                <InputDate class="form-control" @bind-Value="model.LeaseStartDate" />
+                <ValidationMessage For="() => model.LeaseStartDate" class="form-error" />
+                <div class="form-hint">Outstanding balance is calculated from this date forward</div>
+            </div>
+
+            <div style="display:flex;gap:12px;margin-top:8px">
+                <a href="/tenants" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary" disabled="@saving">
+                    @(saving ? "Adding…" : "Add Tenant")
+                </button>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    TenantFormModel model = new() { LeaseStartDate = DateOnly.FromDateTime(DateTime.Today) };
+    bool    saving = false;
+    string? error;
+
+    class TenantFormModel
+    {
+        [Required(ErrorMessage = "Name is required")]
+        [MinLength(2, ErrorMessage = "Name must be at least 2 characters")]
+        public string Name { get; set; } = "";
+
+        [Required(ErrorMessage = "Monthly rent is required")]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Monthly rent must be greater than 0")]
+        public decimal MonthlyRent { get; set; }
+
+        [Required(ErrorMessage = "Lease start date is required")]
+        public DateOnly LeaseStartDate { get; set; }
+    }
+
+    async Task HandleSubmit()
+    {
+        saving = true;
+        error  = null;
+        try
+        {
+            var result = await Api.CreateTenantAsync(
+                new CreateTenantDto(model.Name.Trim(), model.MonthlyRent, model.LeaseStartDate));
+            Nav.NavigateTo($"/tenants/{result?.TenantId}");
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not add tenant: {ex.Message}";
+        }
+        finally
+        {
+            saving = false;
+        }
+    }
+}

@@ -1,6 +1,6 @@
 namespace AcomTracker.Infrastructure.Persistence;
 
-using System.Dynamic;
+using AcomTracker.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 public class AcomDb : DbContext

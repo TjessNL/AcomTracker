@@ -1,0 +1,129 @@
+@page "/tenants"
+@inject AcomApiService Api
+
+<PageTitle>Tenants — AcomTracker</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Tenants</h1>
+        <p class="page-subtitle">Manage lease holders and their agreements</p>
+    </div>
+    <a href="tenants/add" class="btn btn-primary">+ Add Tenant</a>
+</div>
+
+<div class="toolbar">
+    <div class="search-wrap">
+        <span class="search-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+        </span>
+        <input class="search-input"
+               type="search"
+               placeholder="Search by name..."
+               @oninput="OnSearch" />
+    </div>
+</div>
+
+@if (loading)
+{
+    <div class="loader">
+        <div class="spinner"></div>
+        <p class="loader-text">Loading tenants...</p>
+    </div>
+}
+else if (error is not null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else
+{
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Monthly Rent</th>
+                    <th>Lease Start</th>
+                    <th>Status</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (tenants is null || !tenants.Any())
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">👥</div>
+                                <div class="empty-state-title">No tenants yet</div>
+                                <div class="empty-state-desc">
+                                    <a href="tenants/add" style="color:var(--primary)">Add your first tenant</a> to get started
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var t in tenants)
+                    {
+                        <tr>
+                            <td>
+                                <div style="display:flex;align-items:center;gap:12px">
+                                    <div class="tenant-avatar" style="width:34px;height:34px;font-size:14px">
+                                        @t.Name[0]
+                                    </div>
+                                    <a href="tenants/@t.TenantId"
+                                       style="font-weight:600;color:var(--primary);text-decoration:none">
+                                        @t.Name
+                                    </a>
+                                </div>
+                            </td>
+                            <td style="font-weight:600">€@t.MonthlyRent.ToString("N2")</td>
+                            <td style="color:var(--text-secondary)">@t.LeaseStartDate.ToString("MMM d, yyyy")</td>
+                            <td>
+                                <span class="badge @(t.IsActive ? "badge-success" : "badge-neutral")">
+                                    @(t.IsActive ? "Active" : "Inactive")
+                                </span>
+                            </td>
+                            <td>
+                                <a href="tenants/@t.TenantId" class="btn btn-secondary btn-sm">View →</a>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    TenantListDto[]? tenants;
+    string           searchTerm = "";
+    bool             loading    = true;
+    string?          error;
+
+    protected override async Task OnInitializedAsync() => await Load();
+
+    async Task OnSearch(ChangeEventArgs _) => await Load();
+
+    async Task Load()
+    {
+        loading = true;
+        error   = null;
+        try
+        {
+            tenants = await Api.GetTenantsAsync(
+                string.IsNullOrWhiteSpace(searchTerm) ? null : searchTerm);
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not load tenants: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

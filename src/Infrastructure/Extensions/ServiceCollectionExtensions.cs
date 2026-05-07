@@ -1,4 +1,11 @@
 namespace AcomTracker.Infrastructure.Extensions;
+
+using AcomTracker.Application.Services;
+using AcomTracker.Domain.Interfaces;
+using AcomTracker.Infrastructure.Persistence;
+using AcomTracker.Infrastructure.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddInfrastructure(
@@ -9,6 +16,7 @@ public static class ServiceCollectionExtensions
 
         services.AddScoped<ITenantRepository, TenantRepository>();
         services.AddScoped<IPaymentRepository, PaymentRepository>();
+        services.AddScoped<IExpenseRepository, ExpenseRepository>();
         services.AddScoped<ITenantService, TenantService>();
         services.AddScoped<IPaymentService, PaymentService>();
 

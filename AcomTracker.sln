@@ -2,7 +2,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.5.2.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src", src\AcomTrack.csproj", "{328D7619-2A3E-D318-717E-649E1E9DF1C7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "src", "src\AcomTrack.csproj", "{328D7619-2A3E-D318-717E-649E1E9DF1C7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcomTracker.Client", "src\AcomTracker.Client\AcomTracker.Client.csproj", "{A2C45B89-3F7D-4E1A-9B6C-D8E0F5A3C2B4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -14,6 +16,10 @@ Global
 		{328D7619-2A3E-D318-717E-649E1E9DF1C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{328D7619-2A3E-D318-717E-649E1E9DF1C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{328D7619-2A3E-D318-717E-649E1E9DF1C7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2C45B89-3F7D-4E1A-9B6C-D8E0F5A3C2B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2C45B89-3F7D-4E1A-9B6C-D8E0F5A3C2B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2C45B89-3F7D-4E1A-9B6C-D8E0F5A3C2B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2C45B89-3F7D-4E1A-9B6C-D8E0F5A3C2B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
