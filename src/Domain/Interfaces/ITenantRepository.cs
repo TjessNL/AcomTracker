@@ -1,5 +1,7 @@
 namespace AcomTracker.Domain.Interfaces;
 
+using AcomTracker.Domain.Entities;
+
 public interface ITenantRepository
 {
     Task<IEnumerable<Tenant>> GetAllAsync(string? search = null);

@@ -12,7 +12,19 @@ builder.Services.AddOpenApiDocument(config =>
     config.Version      = "v1";
 });
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "https://localhost:7173")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 var app = builder.Build();
+
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {

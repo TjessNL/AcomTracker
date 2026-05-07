@@ -1,0 +1,18 @@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found — AcomTracker</PageTitle>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <div class="empty-state" style="padding:80px 24px">
+                <div class="empty-state-icon">404</div>
+                <div class="empty-state-title">Page not found</div>
+                <div class="empty-state-desc">
+                    <a href="/" style="color:var(--primary)">Go to Dashboard</a>
+                </div>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

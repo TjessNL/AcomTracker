@@ -1,0 +1,146 @@
+@page "/"
+@inject AcomApiService Api
+
+<PageTitle>Dashboard — AcomTracker</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Overview of all active tenants and balances</p>
+    </div>
+    <a href="tenants/add" class="btn btn-primary">+ Add Tenant</a>
+</div>
+
+@if (loading)
+{
+    <div class="loader">
+        <div class="spinner"></div>
+        <p class="loader-text">Loading dashboard...</p>
+    </div>
+}
+else if (error is not null)
+{
+    <div class="alert alert-danger">@error</div>
+}
+else if (tenants is not null)
+{
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Active Tenants</div>
+            <div class="stat-value">@tenants.Length</div>
+            <div class="stat-sublabel">currently leasing</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Monthly Income</div>
+            <div class="stat-value">€@tenants.Sum(t => t.MonthlyRent).ToString("N0")</div>
+            <div class="stat-sublabel">expected per month</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Collected</div>
+            <div class="stat-value is-positive">€@tenants.Sum(t => t.TotalPaid).ToString("N0")</div>
+            <div class="stat-sublabel">all time</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Outstanding</div>
+            <div class="stat-value @(totalOutstanding > 0 ? "is-danger" : "is-positive")">
+                €@totalOutstanding.ToString("N0")
+            </div>
+            <div class="stat-sublabel">across all tenants</div>
+        </div>
+    </div>
+
+    <div class="toolbar">
+        <div class="search-wrap">
+            <span class="search-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+            </span>
+            <input class="search-input"
+                   type="search"
+                   placeholder="Search tenants..."
+                   @bind="searchTerm"
+                   @bind:event="oninput" />
+        </div>
+        <span class="badge badge-neutral">@filteredTenants.Count() tenants</span>
+    </div>
+
+    @if (!filteredTenants.Any())
+    {
+        <div class="empty-state">
+            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-title">No tenants found</div>
+            <div class="empty-state-desc">Try a different search term or <a href="tenants/add" style="color:var(--primary)">add a tenant</a></div>
+        </div>
+    }
+    else
+    {
+        <div class="tenant-grid">
+            @foreach (var t in filteredTenants)
+            {
+                var paidPct    = t.TotalCharged > 0 ? (double)(t.TotalPaid / t.TotalCharged * 100) : 100;
+                var clampedPct = Math.Min(paidPct, 100);
+                var status     = t.OutstandingBalance <= 0 ? "ok" : (paidPct >= 70 ? "partial" : "overdue");
+                var statusText = status == "ok" ? "Paid up" : status == "partial" ? "Partial" : "Overdue";
+                var badgeCls   = status == "ok" ? "badge-success" : status == "partial" ? "badge-warning" : "badge-danger";
+
+                <a href="tenants/@t.TenantId" class="tenant-card">
+                    <div class="tenant-card-top">
+                        <div class="tenant-avatar">@t.Name[0]</div>
+                        <div class="tenant-info">
+                            <div class="tenant-name">@t.Name</div>
+                            <div class="tenant-rent">€@t.MonthlyRent.ToString("N0") / month</div>
+                        </div>
+                        <span class="badge @badgeCls">@statusText</span>
+                    </div>
+                    <div class="tenant-card-body">
+                        <div class="balance-bar">
+                            <div class="balance-bar-fill status-@status" style="width:@clampedPct%"></div>
+                        </div>
+                        <div class="tenant-balance-row">
+                            <span class="balance-label">Outstanding balance</span>
+                            <span class="balance-chip status-@status">
+                                @(t.OutstandingBalance <= 0 ? "All clear ✓" : $"€{t.OutstandingBalance:N0}")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="tenant-card-footer">
+                        <span>Last payment: @(t.LastPayment.HasValue ? t.LastPayment.Value.ToString("MMM d, yyyy") : "None recorded")</span>
+                        <span>→</span>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+}
+
+@code {
+    TenantSummaryDto[]? tenants;
+    string             searchTerm = "";
+    bool               loading    = true;
+    string?            error;
+
+    decimal totalOutstanding =>
+        tenants?.Sum(t => Math.Max(t.OutstandingBalance, 0)) ?? 0;
+
+    IEnumerable<TenantSummaryDto> filteredTenants =>
+        tenants?.Where(t => string.IsNullOrWhiteSpace(searchTerm) ||
+                            t.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+               ?? [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            tenants = await Api.GetDashboardAsync();
+        }
+        catch (Exception ex)
+        {
+            error = $"Could not reach the API: {ex.Message}. Make sure the backend is running on http://localhost:5096.";
+        }
+        finally
+        {
+            loading = false;
+        }
+    }
+}

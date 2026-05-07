@@ -6,8 +6,17 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!-- Exclude the Blazor WASM client project — it has its own .csproj and SDK -->
+  <ItemGroup>
+    <Compile Remove="AcomTracker.Client/**" />
+    <Content Remove="AcomTracker.Client/**" />
+    <EmbeddedResource Remove="AcomTracker.Client/**" />
+    <None Remove="AcomTracker.Client/**" />
+  </ItemGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
